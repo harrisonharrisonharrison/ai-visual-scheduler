@@ -1,8 +1,8 @@
 import { type CalendarEvent } from "./calendar";
 
 export const mockCalendarEvent: CalendarEvent = {
-  summary: 'banquet hangout',
-  description: 'just a chill banquet vibe with friends, lol.',
-  startTime: '2026-06-18T17:30:00-07:00',
-  endTime: '2026-06-18T18:00:00-07:00'
+  summary: 'graduation vibes!',
+  description: "celebratin' the grind, squad's all here, lookin' fly! FWEH! balloons in the back, smiles on deck! SLATT!",
+  startTime: '2026-06-19T00:38:34-07:00',
+  endTime: '2026-06-19T01:08:34-07:00'
 }
