@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  ai-calendar-backend
+  Serverless backend for parsing images into Google Calendar events
+
+Globals:
+  Function:
+    Timeout: 30 
+
+Resources:
+  AiCalendarFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: hello-world/
+      Handler: index.lambdaHandler
+      Runtime: nodejs20.x
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          OPENAI_API_KEY: '{{resolve:ssm:OPENAI_API_KEY}}'
+          GOOGLE_CLIENT_ID: '{{resolve:ssm:GOOGLE_CLIENT_ID}}'
+          GOOGLE_CLIENT_SECRET: '{{resolve:ssm:GOOGLE_CLIENT_SECRET}}'
+          GOOGLE_REFRESH_TOKEN: '{{resolve:ssm:GOOGLE_REFRESH_TOKEN}}'
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /log-event
+            Method: post
+    Metadata: 
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        EntryPoints: 
+          - index.ts
+
+Outputs:
+  AiCalendarApi:
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/Prod/log-event"
