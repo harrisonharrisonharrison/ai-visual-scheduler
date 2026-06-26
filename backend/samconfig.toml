@@ -4,6 +4,7 @@ version = 0.1
 
 [default.global.parameters]
 stack_name = "backend"
+region = "us-west-2"
 
 [default.build.parameters]
 cached = true
@@ -16,6 +17,9 @@ lint = true
 capabilities = "CAPABILITY_IAM"
 confirm_changeset = true
 resolve_s3 = true
+stack_name = "ai-calendar-stack"
+s3_prefix = "ai-calendar-stack"
+image_repositories = []
 
 [default.package.parameters]
 resolve_s3 = true

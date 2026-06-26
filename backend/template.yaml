@@ -7,8 +7,17 @@ Description: >
 Globals:
   Function:
     Timeout: 30 
+    MemorySize: 1024
 
 Resources:
+  ImageUploadBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders: ['*']
+            AllowedMethods: ['PUT', 'GET']
+            AllowedOrigins: ['*']
   AiCalendarFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -23,12 +32,21 @@ Resources:
           GOOGLE_CLIENT_ID: '{{resolve:ssm:GOOGLE_CLIENT_ID}}'
           GOOGLE_CLIENT_SECRET: '{{resolve:ssm:GOOGLE_CLIENT_SECRET}}'
           GOOGLE_REFRESH_TOKEN: '{{resolve:ssm:GOOGLE_REFRESH_TOKEN}}'
+          IMAGE_BUCKET_NAME: !Ref ImageUploadBucket
+      Policies:
+        - S3CrudPolicy:
+            BucketName: !Ref ImageUploadBucket
       Events:
         ApiEvent:
           Type: Api
           Properties:
             Path: /log-event
             Method: post
+        UploadUrlApi:
+          Type: Api
+          Properties:
+            Path: /upload-url
+            Method: get
     Metadata: 
       BuildMethod: esbuild
       BuildProperties:
@@ -41,3 +59,6 @@ Outputs:
   AiCalendarApi:
     Description: "API Gateway endpoint URL"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/Prod/log-event"
+  UploadApiUrl:
+    Description: "API URL to get S3 upload link"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/Prod/upload-url"
