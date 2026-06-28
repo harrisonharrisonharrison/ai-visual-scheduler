@@ -1,7 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './App.css';
 
 export default function StoneAgeUploader() {
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const imageUrl = URL.createObjectURL(file);
+      setImagePreview(imageUrl);
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen w-full bg-gradient-to-br from-stone-200 to-stone-400 overflow-hidden font-sans">
       
@@ -15,19 +25,54 @@ export default function StoneAgeUploader() {
       <main className="flex-1 relative flex items-center justify-center px-4">  
         <div className="relative w-full max-w-sm aspect-square flex flex-col items-center justify-center -mt-20">
           
-          <img 
-            src="/hide-outline.svg" 
-            alt="Dropzone Outline" 
-            className="absolute inset-0 w-full h-full object-contain pointer-events-none drop-shadow-4xl" 
-          />
-
-          <div className="relative z-10 flex flex-col items-center justify-center -mt-8">
-            <img 
-              src="/sun-graphic.png" 
-              alt="Sun Art" 
-              className="w-48 h-48 object-contain" 
+          <label 
+            htmlFor="camera-input" 
+            className="absolute inset-0 z-0 flex flex-col items-center justify-center cursor-pointer group"
+          >
+            <input 
+              id="camera-input"
+              type="file" 
+              accept="image/*" 
+              capture="environment" 
+              className="hidden" 
+              onChange={handleImageUpload}
             />
-          </div>
+
+            {imagePreview ? (
+              <div 
+                className="absolute inset-0 w-full h-full"
+                style={{
+                  WebkitMaskImage: `url('/hide-outline.svg')`,
+                  WebkitMaskSize: 'contain',
+                  WebkitMaskRepeat: 'no-repeat',
+                  WebkitMaskPosition: 'center',
+                  maskImage: `url('/hide-outline.svg')`,
+                  maskSize: 'contain',
+                  maskRepeat: 'no-repeat',
+                  maskPosition: 'center',
+                }}
+              >
+                <img 
+                  src={imagePreview} 
+                  alt="Captured Vision" 
+                  className="w-full h-full object-cover" 
+                />
+              </div>
+            ) : (
+              <>
+                <img 
+                  src="/hide-outline.svg" 
+                  alt="Dropzone Outline" 
+                  className="absolute inset-0 w-full h-full object-contain group-hover:opacity-60 transition-opacity pointer-events-none" 
+                />
+                <img 
+                  src="/sun-graphic.png" 
+                  alt="Sun Art" 
+                  className="w-48 h-48 object-contain -mt-8 z-10 pointer-events-none" 
+                />
+              </>
+            )}
+          </label>
 
           <div className="absolute bottom-0 left-0 w-full flex items-center justify-center translate-y-1/2 z-20">
             <div className="relative w-[140%] max-w-md flex items-center justify-center">
