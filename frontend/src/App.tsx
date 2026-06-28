@@ -29,7 +29,7 @@ export default function StoneAgeUploader() {
       </header>
 
       <main className="flex-1 relative flex items-center justify-center px-4">
-        <div className="relative w-full max-w-sm aspect-square flex flex-col items-center justify-center -mt-20">
+        <div className="relative w-full max-w-sm aspect-square flex flex-col items-center justify-center -mt-50">
           <label
             htmlFor="camera-input"
             className="absolute inset-0 z-0 flex flex-col items-center justify-center cursor-pointer group"
