@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: >
   ai-calendar-backend
@@ -6,23 +6,23 @@ Description: >
 
 Globals:
   Function:
-    Timeout: 30 
+    Timeout: 30
     MemorySize: 1024
   Api:
     Cors:
       AllowMethods: "'GET,POST,PUT,OPTIONS'"
       AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
       AllowOrigin: "'*'"
-      
+
 Resources:
   ImageUploadBucket:
     Type: AWS::S3::Bucket
     Properties:
       CorsConfiguration:
         CorsRules:
-          - AllowedHeaders: ['*']
-            AllowedMethods: ['PUT', 'GET']
-            AllowedOrigins: ['*']
+          - AllowedHeaders: ["*"]
+            AllowedMethods: ["PUT", "GET"]
+            AllowedOrigins: ["*"]
   AiCalendarFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -33,10 +33,10 @@ Resources:
         - x86_64
       Environment:
         Variables:
-          OPENAI_API_KEY: '{{resolve:ssm:OPENAI_API_KEY}}'
-          GOOGLE_CLIENT_ID: '{{resolve:ssm:GOOGLE_CLIENT_ID}}'
-          GOOGLE_CLIENT_SECRET: '{{resolve:ssm:GOOGLE_CLIENT_SECRET}}'
-          GOOGLE_REFRESH_TOKEN: '{{resolve:ssm:GOOGLE_REFRESH_TOKEN}}'
+          OPENAI_API_KEY: "{{resolve:ssm:OPENAI_API_KEY}}"
+          GOOGLE_CLIENT_ID: "{{resolve:ssm:GOOGLE_CLIENT_ID}}"
+          GOOGLE_CLIENT_SECRET: "{{resolve:ssm:GOOGLE_CLIENT_SECRET}}"
+          GOOGLE_REFRESH_TOKEN: "{{resolve:ssm:GOOGLE_REFRESH_TOKEN}}"
           IMAGE_BUCKET_NAME: !Ref ImageUploadBucket
       Policies:
         - S3CrudPolicy:
@@ -52,12 +52,19 @@ Resources:
           Properties:
             Path: /upload-url
             Method: get
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        EntryPoints:
+          - index.ts
   GetLogsFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: hello-world/
       Handler: get-logs.getLogsHandler
-      Runtime: nodejs20.x 
+      Runtime: nodejs20.x
       Architectures:
         - x86_64
       MemorySize: 512
@@ -70,17 +77,17 @@ Resources:
             Method: get
       Environment:
         Variables:
-          GOOGLE_CLIENT_ID: '{{resolve:ssm:GOOGLE_CLIENT_ID}}'
-          GOOGLE_CLIENT_SECRET: '{{resolve:ssm:GOOGLE_CLIENT_SECRET}}'
-          GOOGLE_REFRESH_TOKEN: '{{resolve:ssm:GOOGLE_REFRESH_TOKEN}}'
-          GOOGLE_CALENDAR_ID: 'primary'
-    Metadata: 
+          GOOGLE_CLIENT_ID: "{{resolve:ssm:GOOGLE_CLIENT_ID}}"
+          GOOGLE_CLIENT_SECRET: "{{resolve:ssm:GOOGLE_CLIENT_SECRET}}"
+          GOOGLE_REFRESH_TOKEN: "{{resolve:ssm:GOOGLE_REFRESH_TOKEN}}"
+          GOOGLE_CALENDAR_ID: "primary"
+    Metadata:
       BuildMethod: esbuild
       BuildProperties:
         Minify: true
         Target: "es2020"
-        EntryPoints: 
-          - index.ts
+        EntryPoints:
+          - get-logs.ts
 
 Outputs:
   AiCalendarApi:

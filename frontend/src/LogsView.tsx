@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 type LogEvent = {
   id: string;
@@ -7,21 +7,7 @@ type LogEvent = {
   link: string;
 };
 
-// Dummy data for testing the UI
-const mockLogs: LogEvent[] = [
-  {
-    id: "1",
-    title: "SABERTOOTH HUNT",
-    summary: "ALMOST GOT EATEN. NEED BIGGER STICK. FWEH!",
-    link: "https://calendar.google.com",
-  },
-  {
-    id: "2",
-    title: "FIRE DISCOVERY",
-    summary: "RUBBED TWO ROCKS TOGETHER. IT IS WARM. SLATT.",
-    link: "https://calendar.google.com",
-  },
-];
+const API_BASE_URL = "https://8zm8rfep3k.execute-api.us-west-2.amazonaws.com/Prod";
 
 const LogEntry = ({ log }: { log: LogEvent }) => (
   <div className="relative w-full aspect-[1.8/1] mb-8 flex items-center justify-center group hover:scale-[1.02] transition-transform">
@@ -33,10 +19,10 @@ const LogEntry = ({ log }: { log: LogEvent }) => (
 
     <div className="relative z-10 w-full h-full flex flex-col justify-between p-6 md:p-8 text-stone-700 font-sans">
       <div>
-        <h3 className="text-xl font-bold tracking-widest uppercase mb-2">
+        <h3 className="text-xl font-bold tracking-widest uppercase mb-2 line-clamp-1">
           {log.title}
         </h3>
-        <p className="text-sm font-medium tracking-wide uppercase leading-snug opacity-80">
+        <p className="text-sm font-medium tracking-wide uppercase leading-snug opacity-80 line-clamp-3">
           {log.summary}
         </p>
       </div>
@@ -54,6 +40,26 @@ const LogEntry = ({ log }: { log: LogEvent }) => (
 );
 
 export default function LogsView() {
+  const [logs, setLogs] = useState<LogEvent[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const fetchLogs = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/logs`);
+        if (!res.ok) throw new Error("Failed to load logs");
+        const data = await res.json();
+        setLogs(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchLogs();
+  }, []);
+
   return (
     <div className="flex-1 w-full flex flex-col overflow-hidden">
       <header className="flex items-center w-full px-6 pt-12 pb-4 shrink-0">
@@ -65,16 +71,27 @@ export default function LogsView() {
 
       <div className="flex-1 w-full overflow-y-auto px-6 pb-32 pt-4 flex flex-col items-center hide-scrollbar">
         <div className="w-full max-w-md">
-          {mockLogs.map((log) => (
-            <LogEntry key={log.id} log={log} />
-          ))}
           
-          {/* End of Etchings Marker */}
-          <div className="w-full flex justify-center mt-6 mb-8 opacity-60">
-            <span className="text-xs font-light tracking-[0.2em] text-black uppercase text-center">
-              - end of recent etchings -
-            </span>
-          </div>
+          {loading ? (
+            <div className="text-center text-stone-600 tracking-widest uppercase mt-12 animate-pulse">
+              Consulting the Elders...
+            </div>
+          ) : logs.length === 0 ? (
+            <div className="text-center text-stone-600 tracking-widest uppercase mt-12">
+              No visions etched yet.
+            </div>
+          ) : (
+            logs.map((log) => <LogEntry key={log.id} log={log} />)
+          )}
+
+          {!loading && (
+            <div className="w-full flex justify-center mt-6 mb-8 opacity-60">
+              <span className="text-xs font-light tracking-[0.2em] text-black uppercase text-center">
+                - end of recent etchings -
+              </span>
+            </div>
+          )}
+          
         </div>
       </div>
     </div>
