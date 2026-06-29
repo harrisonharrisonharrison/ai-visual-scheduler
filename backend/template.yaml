@@ -8,7 +8,12 @@ Globals:
   Function:
     Timeout: 30 
     MemorySize: 1024
-
+  Api:
+    Cors:
+      AllowMethods: "'GET,POST,PUT,OPTIONS'"
+      AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+      AllowOrigin: "'*'"
+      
 Resources:
   ImageUploadBucket:
     Type: AWS::S3::Bucket

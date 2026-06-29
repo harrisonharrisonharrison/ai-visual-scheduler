@@ -125,8 +125,16 @@ export const lambdaHandler = async (
 
       return {
         statusCode: 200,
-        headers,
-        body: JSON.stringify({ message: "Success!", calendarLink, eventData }),
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "OPTIONS,POST,GET",
+          "Access-Control-Allow-Headers": "Content-Type",
+        },
+        body: JSON.stringify({
+          message: "Success!",
+          calendarLink,
+          eventData,
+        }),
       };
     }
 
