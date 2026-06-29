@@ -52,6 +52,28 @@ Resources:
           Properties:
             Path: /upload-url
             Method: get
+  GetLogsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: hello-world/
+      Handler: get-logs.getLogsHandler
+      Runtime: nodejs20.x 
+      Architectures:
+        - x86_64
+      MemorySize: 512
+      Timeout: 30
+      Events:
+        GetLogsApi:
+          Type: Api
+          Properties:
+            Path: /logs
+            Method: get
+      Environment:
+        Variables:
+          GOOGLE_CLIENT_ID: '{{resolve:ssm:GOOGLE_CLIENT_ID}}'
+          GOOGLE_CLIENT_SECRET: '{{resolve:ssm:GOOGLE_CLIENT_SECRET}}'
+          GOOGLE_REFRESH_TOKEN: '{{resolve:ssm:GOOGLE_REFRESH_TOKEN}}'
+          GOOGLE_CALENDAR_ID: 'primary'
     Metadata: 
       BuildMethod: esbuild
       BuildProperties:
