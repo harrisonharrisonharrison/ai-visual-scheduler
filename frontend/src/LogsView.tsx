@@ -31,7 +31,7 @@ const LogEntry = ({ log }: { log: LogEvent }) => (
       className="absolute inset-0 w-full h-full object-fill drop-shadow-xl pointer-events-none"
     />
 
-    <div className="relative z-10 w-full h-full flex flex-col justify-between p-6 md:p-8 text-stone-950 font-sans">
+    <div className="relative z-10 w-full h-full flex flex-col justify-between p-6 md:p-8 text-stone-700 font-sans">
       <div>
         <h3 className="text-xl font-bold tracking-widest uppercase mb-2">
           {log.title}
@@ -47,7 +47,7 @@ const LogEntry = ({ log }: { log: LogEvent }) => (
         rel="noreferrer"
         className="text-sm font-bold tracking-[0.2em] uppercase underline underline-offset-4 self-start mt-2 hover:opacity-70 transition-opacity"
       >
-        Link
+        VIEW MEMORY
       </a>
     </div>
   </div>
