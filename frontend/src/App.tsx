@@ -1,9 +1,16 @@
 import React, { useState, useRef, useEffect } from "react";
 import "./App.css";
 
+const API_BASE_URL = "https://8zm8rfep3k.execute-api.us-west-2.amazonaws.com/Prod";
+
 export default function StoneAgeUploader() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isImageLoading, setIsImageLoading] = useState<boolean>(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [contextText, setContextText] = useState<string>("");
 
   const [progress, setProgress] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -13,39 +20,81 @@ export default function StoneAgeUploader() {
     const file = e.target.files?.[0];
     if (file) {
       setIsImageLoading(true);
-
-      if (imagePreview) {
-        URL.revokeObjectURL(imagePreview);
-      }
-
+      if (imagePreview) URL.revokeObjectURL(imagePreview);
+      
       const imageUrl = URL.createObjectURL(file);
       setImagePreview(imageUrl);
-      setProgress(0); // Reset slider on new image
+      setSelectedFile(file); 
+      setProgress(0); 
     }
   };
 
-  const handleDragStart = () => setIsDragging(true);
+  const handleDragStart = () => {
+    if (!isSubmitting) setIsDragging(true);
+  };
+
+  const submitToCloud = async () => {
+    if (!selectedFile) return;
+    
+    setIsSubmitting(true);
+    setToastMessage("Carving into stone...");
+
+    try {
+      const urlRes = await fetch(`${API_BASE_URL}/upload-url`);
+      if (!urlRes.ok) throw new Error("Failed to get upload URL");
+      const { uploadUrl, fileName } = await urlRes.json();
+
+      await fetch(uploadUrl, {
+        method: "PUT",
+        headers: { "Content-Type": selectedFile.type },
+        body: selectedFile,
+      });
+
+      const logRes = await fetch(`${API_BASE_URL}/log-event`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fileName, context: contextText }),
+      });
+
+      if (!logRes.ok) throw new Error("Failed to log event");
+
+      // SUCCESS: Clear everything and show toast
+      setToastMessage("VISION ETCHED SUCCESSFULLY!");
+      setImagePreview(null);
+      setSelectedFile(null);
+      setContextText("");
+      setProgress(0);
+
+    } catch (error) {
+      console.error(error);
+      setToastMessage("FAILED TO ETCH. TRY AGAIN!");
+      setProgress(0); 
+    } finally {
+      setIsSubmitting(false);
+      setTimeout(() => setToastMessage(null), 4000);
+    }
+  };
 
   useEffect(() => {
     const handleDragMove = (clientX: number) => {
-      if (!isDragging || !trackRef.current) return;
+      if (!isDragging || !trackRef.current || isSubmitting) return;
       const rect = trackRef.current.getBoundingClientRect();
       const x = clientX - rect.left;
 
-      // Calculate percentage and clamp between 0 and 100
       let newProgress = (x / rect.width) * 100;
       newProgress = Math.max(0, Math.min(newProgress, 100));
       setProgress(newProgress);
     };
 
     const handleDragEnd = () => {
+      if (!isDragging) return;
       setIsDragging(false);
-      if (progress < 100) {
-        setProgress(0);
+      
+      if (progress >= 95) {
+        setProgress(100); // Snap to end visually
+        submitToCloud();
       } else {
-        console.log("Vision etched! Submitting...");
-        // Optional: Reset after submission
-        // setProgress(0);
+        setProgress(0); // Snap back to start
       }
     };
 
@@ -67,10 +116,17 @@ export default function StoneAgeUploader() {
       window.removeEventListener("mouseup", onMouseUp);
       window.removeEventListener("touchend", onTouchEnd);
     };
-  }, [isDragging, progress]);
+  }, [isDragging, progress, isSubmitting]);
 
   return (
-    <div className="flex flex-col h-screen w-full bg-gradient-to-br from-stone-200 to-stone-400 overflow-hidden font-sans">
+    <div className="flex flex-col h-screen w-full bg-gradient-to-br from-stone-200 to-stone-400 overflow-hidden font-sans relative">
+      
+      <div 
+        className={`absolute top-24 left-1/2 -translate-x-1/2 z-50 px-6 py-4 bg-stone-800 text-stone-100 font-medium tracking-[0.15em] uppercase text-sm text-center rounded-sm drop-shadow-2xl border-b-4 border-stone-950 transition-all duration-500 ease-out ${toastMessage ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-8 pointer-events-none'}`}
+      >
+        {toastMessage}
+      </div>
+
       <header className="flex items-center w-full px-6 pt-12 pb-4">
         <h1 className="text-sm font-light tracking-[0.2em] text-black uppercase">
           Etch Your Vision
@@ -82,7 +138,7 @@ export default function StoneAgeUploader() {
         <div className="relative w-full max-w-sm aspect-square flex flex-col items-center justify-center -mt-32 z-20">
           <label
             htmlFor="camera-input"
-            className="absolute inset-0 z-0 flex flex-col items-center justify-center cursor-pointer group"
+            className={`absolute inset-0 z-0 flex flex-col items-center justify-center cursor-pointer group ${isSubmitting ? 'pointer-events-none' : ''}`}
           >
             <input
               id="camera-input"
@@ -91,14 +147,12 @@ export default function StoneAgeUploader() {
               capture="environment"
               className="hidden"
               onChange={handleImageUpload}
-              onClick={(e) => {
-                e.currentTarget.value = "";
-              }}
+              onClick={(e) => { e.currentTarget.value = ""; }}
             />
 
             {imagePreview ? (
               <div
-                className="absolute inset-0 w-full h-full flex items-center justify-center bg-stone-300"
+                className={`absolute inset-0 w-full h-full flex items-center justify-center bg-stone-300 ${isSubmitting ? 'brightness-50 grayscale transition-all duration-700' : ''}`}
                 style={{
                   WebkitMaskImage: `url('/hide-outline.svg')`,
                   WebkitMaskSize: "contain",
@@ -152,8 +206,11 @@ export default function StoneAgeUploader() {
               />
               <input
                 type="text"
+                value={contextText}
+                onChange={(e) => setContextText(e.target.value)}
+                disabled={isSubmitting}
                 placeholder="Add any context?"
-                className="absolute w-3/4 h-1/2 pb-12 bg-transparent text-center text-stone-950 font-serif text-xl placeholder:text-gray-600 focus:outline-none z-20"
+                className="absolute w-3/4 h-1/2 pb-12 bg-transparent text-center text-stone-950 font-serif text-xl placeholder:text-gray-600 focus:outline-none z-20 disabled:opacity-50"
               />
             </div>
           </div>
@@ -167,7 +224,7 @@ export default function StoneAgeUploader() {
           }`}
         >
           <div
-            className={`absolute -top-5 left-1/2 -translate-x-1/2 flex items-center gap-2 text-stone-600 transition-opacity duration-500 ${progress > 10 ? "opacity-0" : "opacity-100 animate-pulse"}`}
+            className={`absolute -top-5 left-1/2 -translate-x-1/2 flex items-center gap-2 text-stone-600 transition-opacity duration-500 ${progress > 10 || isSubmitting ? "opacity-0" : "opacity-100 animate-pulse"}`}
           >
             <span className="text-sm tracking-widest uppercase font-semibold">
               Slide to etch
@@ -179,12 +236,7 @@ export default function StoneAgeUploader() {
               viewBox="0 0 24 24"
               stroke="currentColor"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M17 8l4 4m0 0l-4 4m4-4H3"
-              />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
             </svg>
           </div>
 
@@ -211,7 +263,7 @@ export default function StoneAgeUploader() {
               <img
                 src="/stick.png"
                 alt="Wooden Stick"
-                className="w-20 max-w-none shrink-0 -mb-3 h-auto object-contain drop-shadow-md"
+                className={`w-20 max-w-none shrink-0 -mb-3 h-auto object-contain drop-shadow-md ${isSubmitting ? 'animate-pulse opacity-50' : ''}`}
               />
             </div>
           </div>
@@ -220,27 +272,15 @@ export default function StoneAgeUploader() {
 
       <nav className="flex flex-row items-center w-[85%] mx-auto h-36 border-t border-black bg-transparent pb-6 z-30">
         <button className="flex-1 flex flex-col items-center justify-center gap-3 h-full hover:opacity-70 transition-opacity">
-          <img
-            src="/nav-home-icon.png"
-            alt="Home Icon"
-            className="w-14 h-14 object-contain"
-          />
-          <span className="text-xl font-medium tracking-widest uppercase text-black">
-            Home
-          </span>
+          <img src="/nav-home-icon.png" alt="Home Icon" className="w-14 h-14 object-contain" />
+          <span className="text-xl font-medium tracking-widest uppercase text-black">Home</span>
         </button>
 
         <div className="w-[1px] h-3/5 bg-black"></div>
 
         <button className="flex-1 flex flex-col items-center justify-center gap-3 h-full hover:opacity-70 transition-opacity">
-          <img
-            src="/nav-logs-icon.png"
-            alt="Logs Icon"
-            className="w-14 h-14 object-contain"
-          />
-          <span className="text-xl font-medium tracking-widest uppercase text-black">
-            Logs
-          </span>
+          <img src="/nav-logs-icon.png" alt="Logs Icon" className="w-14 h-14 object-contain" />
+          <span className="text-xl font-medium tracking-widest uppercase text-black">Logs</span>
         </button>
       </nav>
     </div>
