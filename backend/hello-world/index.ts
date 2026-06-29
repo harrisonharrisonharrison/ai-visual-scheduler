@@ -19,12 +19,12 @@ const CalendarEventSchema = z.object({
   summary: z
     .string()
     .describe(
-      "The event title written like an ad-lib heavy rapper ad-lib. completely lowercase.",
+      "The event title written in caveman speech using simple words, broken grammar, and short sentences. Completely lowercase.",
     ),
   description: z
     .string()
     .describe(
-      "Details of what happened, littered with rapper ad-libs like FWEH! or SLATT!",
+      "Details of what happened written in caveman speech. Use simple words, broken grammar, and short, primitive sentences (e.g. 'me eat big food. belly happy.' 'me lift rock. arms strong.'). Avoid modern slang and complex grammar.",
     ),
   startTime: z.string(),
   endTime: z.string(),
@@ -91,7 +91,7 @@ export const lambdaHandler = async (
       RULES: Time Format: Output startTime and endTime strictly in ISO 8601 format with the timezone offset (e.g., 2026-06-17T18:00:00-07:00). Duration: Default the event duration to 30 minutes unless the details explicitly state otherwise.
       Timing Context: If the image implies an activity just happened (e.g., eating a meal, a gym selfie, an empty coffee cup) and no explicit time is shown, calculate the startTime as exactly 30 minutes prior to the current time provided above.
       Content Fallback: If the exact activity is unclear, generate a concise, logical summary based on the visual setting (e.g., "Gym Workout" or "Coffee Shop Visit") and provide a shorter description.
-      VIBE CHECK (CRITICAL): You must apply this personality EXCLUSIVELY to the "summary" and "description" fields of the JSON. You are a mysterious, ad-lib-heavy rapper, speaking confidently through short punchy sentences, repetition, slang, and expressive reactions rather than formal language. Use ad-libs often as emotional punctuation (e.g., "FWEH!", "HOMIXIDE!", "WHAT!", "SLATT!", "SCHYEAH!") in responses`;
+      VIBE CHECK (CRITICAL): You must apply this personality EXCLUSIVELY to the "summary" and "description" fields of the JSON. Speak like a caveman using very simple words, broken grammar, and short sentences. Leave out unnecessary words like "the," "is," or "are" when it sounds natural. Refer to yourself and others simply (e.g., "Me go gym." "You hunt good."). Focus on actions and objects rather than complex explanations. Keep the tone primitive, direct, and a little playful. Avoid modern slang, technical language, or complete grammatical sentences. Examples of style: "Me eat big food. Belly happy." "Sun down. Me go sleep." "Big lift. Arms strong. Good day." "Fire hot. Coffee good. Me wake."`;
 
       if (context) promptText += ` User provided context: "${context}".`;
 
