@@ -17,12 +17,26 @@ const oauth2Client = new google.auth.OAuth2(
 
 oauth2Client.setCredentials({
   refresh_token: process.env.GOOGLE_REFRESH_TOKEN || null,
-})
+});
 
 const calendar = google.calendar({ version: "v3", auth: oauth2Client });
 
+const getMappedColorId = (summary: string): string => {
+  const text = summary.toLowerCase();
+  
+  if (text.includes("gym") || text.includes("sun")) return "6";  // Tangerine
+  if (text.includes("hunt") || text.includes("sabertooth")) return "11"; // Tomato
+  if (text.includes("gather") || text.includes("berry")) return "2";  // Sage
+  if (text.includes("water") || text.includes("river")) return "9";  // Blueberry
+  
+  return "8"; 
+};
+
+
 export async function addEventToCalendar(event: CalendarEvent): Promise<string | null> {
   try {
+    const eventColor = getMappedColorId(event.summary);
+
     const response = await calendar.events.insert({
       calendarId: "primary",
       requestBody: {
@@ -30,6 +44,7 @@ export async function addEventToCalendar(event: CalendarEvent): Promise<string |
         description: event.description,
         start: { dateTime: event.startTime },
         end: { dateTime: event.endTime },
+        colorId: eventColor,
       },
     });
 
