@@ -24,12 +24,31 @@ const calendar = google.calendar({ version: "v3", auth: oauth2Client });
 const getMappedColorId = (summary: string): string => {
   const text = summary.toLowerCase();
   
-  if (text.includes("gym") || text.includes("sun")) return "6";  // Tangerine
-  if (text.includes("hunt") || text.includes("sabertooth")) return "11"; // Tomato
-  if (text.includes("gather") || text.includes("berry")) return "2";  // Sage
-  if (text.includes("water") || text.includes("river")) return "9";  // Blueberry
+  // 1. Gym & Physical Fitness
+  const gymSynonyms = ["gym", "workout", "exercise", "lift", "run", "cardio", "training", "fitness", "stretching"];
+  if (gymSynonyms.some(synonym => text.includes(synonym))) {
+    return "11"; // Tomato (Bold Red for high energy/physical output)
+  }
   
-  return "8"; 
+  // 2. Guitar & Music Practice
+  const guitarSynonyms = ["guitar", "music", "practice", "jam", "song", "shred", "strum", "rehearsal", "scales"];
+  if (guitarSynonyms.some(synonym => text.includes(synonym))) {
+    return "3"; // Grape (Deep Purple for creative/artistic efforts)
+  }
+  
+  // 3. Cooking, Food, & Meals
+  const cookSynonyms = ["cook", "chef", "dinner", "lunch", "breakfast", "meal", "food", "eat", "baking", "prep", "grocery"];
+  if (cookSynonyms.some(synonym => text.includes(synonym))) {
+    return "5"; // Banana (Bright Yellow for kitchen/food activities)
+  }
+  
+  // 4. Friends & Social Interaction
+  const friendSynonyms = ["friend", "hangout", "party", "social", "meetup", "chill", "gather", "date", "drinks", "visit"];
+  if (friendSynonyms.some(synonym => text.includes(synonym))) {
+    return "7"; // Peacock (Light Blue for calm, conversational, social settings)
+  }
+  
+  return "8"; // Default: Graphite (Stone Gray) for standard/unclassified tasks
 };
 
 
