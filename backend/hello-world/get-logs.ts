@@ -27,10 +27,11 @@ export const getLogsHandler = async (
 
     const response = await calendar.events.list({
       calendarId: calendarId,
-      maxResults: 15,
+      maxResults: 100, 
       singleEvents: true,
       orderBy: "startTime",
       timeMin: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+      timeMax: new Date().toISOString(), 
     });
 
     const events = response.data.items || [];
@@ -47,7 +48,8 @@ export const getLogsHandler = async (
       .sort(
         (a, b) =>
           new Date(b.startTime).getTime() - new Date(a.startTime).getTime(),
-      );
+      )
+      .slice(0, 15); 
 
     return {
       statusCode: 200,
