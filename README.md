@@ -23,15 +23,18 @@ Hosting: Vercel (Frontend), AWS CloudFormation (Backend)
 ## Local Setup
 
 1. Clone and Install
-Pull down the repository and install dependencies for both the frontend and backend directories using your preferred package manager.
+   
+- Pull down the repository and install dependencies for both the frontend and backend directories using your preferred package manager.
 
 2. Configure Environment Variables
-Store your Google OAuth2 credentials and OpenAI API key in AWS Systems Manager (SSM) as expected by the SAM template.
+   
+- Store your Google OAuth2 credentials and OpenAI API key in AWS Systems Manager (SSM) as expected by the SAM template.
 
 3. Deploy Backend
-Navigate to the backend directory and use the AWS SAM CLI to build and deploy your serverless stack:
-`sam build && sam deploy`
+   
+- Navigate to the backend directory and use the AWS SAM CLI to build and deploy your serverless stack: `sam build && sam deploy`
 
 4. Run Frontend
-Update the API base URL in your frontend code to match your new AWS API Gateway endpoint, then start the Vite development server:
+   
+- Update the API base URL in your frontend code to match your new AWS API Gateway endpoint, then start the Vite development server:
 `npm run dev`
