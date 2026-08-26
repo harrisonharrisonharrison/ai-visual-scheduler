@@ -1,5 +1,4 @@
-
-<img width="403" height="874" alt="image" src="https://github.com/user-attachments/assets/0320ab68-f2b0-46a3-8db0-66b380a0351f" />
+<img width="241" height="486" alt="ScreenRecording_08-18-202620-23-17_1-ezgif com-resize" src="https://github.com/user-attachments/assets/fecc3616-0c49-4861-b30e-6ba22f4a75ed" />
 
 ## Overview
 
